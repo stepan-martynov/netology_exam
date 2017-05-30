@@ -33,19 +33,19 @@ def get_friend_list(user_id='4058867'):
     return user_friend_list
 
 
-def get_user_group_list(user_id='4058867'):
-    user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
-
-    params = {
-        'user_id': user_id,
-        # 'extended': 1,
-        # 'fields': 'name, gid, members_count',
-        'access_token': access_token
-    }
-
-    response = requests.get('https://api.vk.com/method/groups.get', params)
-    user_group_list = response.json()['response']
-    return set(user_group_list)
+# def get_user_group_list(user_id='4058867'):
+#     user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
+#
+#     params = {
+#         'user_id': user_id,
+#         # 'extended': 1,
+#         # 'fields': 'name, gid, members_count',
+#         'access_token': access_token
+#     }
+#
+#     response = requests.get('https://api.vk.com/method/groups.get', params)
+#     user_group_list = response.json()['response']
+#     return set(user_group_list)
 
 
 # pprint(get_user_group_list())
@@ -64,34 +64,33 @@ def get_list_friends_groups(friends_list):
         'access_token': access_token
     }
 
-
     response = requests.get('?'.join((req_link, urlencode(req_data))))
-    pprint(response.json())
     return response.json()['response']
+
 
 pprint(get_list_friends_groups(friends_list[0:24]))
 
 
-    # def spt_lst_by_25_elem(user_friend_list):
-    #     return list(user_friend_list[(i * 25):(i * 25 + 25)] for i in range(len(user_friend_list) // 25 + 1))
-    #
-    #
-    # def main():
-    #     user_id, user_friend_list = get_friend_list()
-    #     with open('full_list.txt', 'w') as f:
-    #         f.write('%s\n' % user_id)
-    #     lst_of_users_lists = spt_lst_by_25_elem(user_friend_list)
-    #
-    #     full_list_of_lists = dict()
-    #     count = int(input('Введите ограничение для списка друзей друзей: '))
-    #     for users_short_list in lst_of_users_lists:
-    #         short_dict = get_friends_list_execute(users_short_list, count)
-    #         full_list_of_lists.update(short_dict)
-    #
-    #     with open('full_list.txt', 'a') as f:
-    #         json.dump(full_list_of_lists, f, indent=4)
-    #     print(len(full_list_of_lists))
-    #
-    #
-    # if __name__ == '__main__':
-    # main()
+# def spt_lst_by_25_elem(user_friend_list):
+#     return list(user_friend_list[(i * 25):(i * 25 + 25)] for i in range(len(user_friend_list) // 25 + 1))
+#
+#
+# def main():
+#     user_id, user_friend_list = get_friend_list()
+#     with open('full_list.txt', 'w') as f:
+#         f.write('%s\n' % user_id)
+#     lst_of_users_lists = spt_lst_by_25_elem(user_friend_list)
+#
+#     full_list_of_lists = dict()
+#     count = int(input('Введите ограничение для списка друзей друзей: '))
+#     for users_short_list in lst_of_users_lists:
+#         short_dict = get_friends_list_execute(users_short_list, count)
+#         full_list_of_lists.update(short_dict)
+#
+#     with open('full_list.txt', 'a') as f:
+#         json.dump(full_list_of_lists, f, indent=4)
+#     print(len(full_list_of_lists))
+#
+#
+# if __name__ == '__main__':
+# main()
