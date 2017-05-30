@@ -65,8 +65,18 @@ def get_list_friends_groups(friends_list):
     }
 
     response = requests.get('?'.join((req_link, urlencode(req_data))))
-    return response.json()['response']
+    # return response.json()['response']
 
+    friends_groups_dict = response.json()['response']
+    friends_groups_list = set()
+
+    # pprint(friends_groups_dict)
+    for i in friends_groups_dict:
+        pprint(set(friends_groups_dict[i]))
+        # friends_groups_list.union(set(friends_groups_dict[i]))
+        # friends_groups_list.union(value)
+
+    return friends_groups_list
 
 pprint(get_list_friends_groups(friends_list[0:24]))
 
