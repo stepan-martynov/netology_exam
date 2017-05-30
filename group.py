@@ -33,24 +33,19 @@ def get_friend_list(user_id='4058867'):
     return user_friend_list
 
 
-# def get_user_group_list(user_id='4058867'):
-#     user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
-#
-#     params = {
-#         'user_id': user_id,
-#         # 'extended': 1,
-#         # 'fields': 'name, gid, members_count',
-#         'access_token': access_token
-#     }
-#
-#     response = requests.get('https://api.vk.com/method/groups.get', params)
-#     user_group_list = response.json()['response']
-#     return set(user_group_list)
+def get_user_group_list(user_id='4058867'):
+    user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
 
+    params = {
+        'user_id': user_id,
+        'access_token': access_token
+    }
 
-# pprint(get_user_group_list())
+    response = requests.get('https://api.vk.com/method/groups.get', params)
+    user_group_list = response.json()['response']
+    return set(user_group_list)
+
 friends_list = get_friend_list()
-pprint(len(friends_list))
 
 
 def get_list_friends_groups(friends_list):
@@ -65,21 +60,24 @@ def get_list_friends_groups(friends_list):
     }
 
     response = requests.get('?'.join((req_link, urlencode(req_data))))
-    # return response.json()['response']
 
     friends_groups_dict = response.json()['response']
     friends_groups_list = set()
 
-    # pprint(friends_groups_dict)
     for i in friends_groups_dict:
-        pprint(set(friends_groups_dict[i]))
-        # friends_groups_list.union(set(friends_groups_dict[i]))
-        # friends_groups_list.union(value)
+        if friends_groups_dict[i]:
+            friends_groups_list = friends_groups_list | set(friends_groups_dict[i])
 
     return friends_groups_list
 
-pprint(get_list_friends_groups(friends_list[0:24]))
+friends_groups_list = get_list_friends_groups(friends_list[0:24])
+# pprint(friends_groups_list)
+pprint(len(friends_groups_list))
 
+group_list = get_user_group_list()
+pprint(len(group_list))
+unique_group_list = group_list.difference(friends_groups_list)
+pprint(len(unique_group_list))
 
 # def spt_lst_by_25_elem(user_friend_list):
 #     return list(user_friend_list[(i * 25):(i * 25 + 25)] for i in range(len(user_friend_list) // 25 + 1))
