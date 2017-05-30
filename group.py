@@ -7,7 +7,7 @@ import requests
 AOUTH_URL = 'https://oauth.vk.com/authorize'
 APP_ID = 6052865
 V = '5.64'
-access_token = '7f0229d55a7a58558d9157d39ee26dbce714364b00d2d01564e287729baa1583f33d6c86b6cb685bcd64d'
+access_token = '34bb0e68405a6a0a07079cb693d2e3dfb830107ff415677fe8e59b8561d1130018f9a375e2a1db93d20f5'
 params = dict()
 
 auth_data = {
@@ -57,13 +57,13 @@ def get_list_friends_groups(friends_list):
     req_link = 'https://api.vk.com/method/execute'
     friends_groups = set()
 
-    req_code = ' '.join(
-        ['return', ',\n'.join(['"%d": API.groups.get({"user_id": %d})' % (i, i) for i in friends_list])])
-
+    req_code = ',\n'.join(['"%d": API.groups.get({"user_id": %d})' % (i, i) for i in friends_list])
+    req_code = 'return {%s};' % req_code
     req_data = {
         'code': req_code,
-        'acess_token': access_token
+        'access_token': access_token
     }
+
 
     response = requests.get('?'.join((req_link, urlencode(req_data))))
     pprint(response.json())
@@ -72,20 +72,6 @@ def get_list_friends_groups(friends_list):
 pprint(get_list_friends_groups(friends_list[0:24]))
 
 
-
-    # def get_friends_list_execute(user_friend_list, count=3):
-    #     req_url = 'https://api.vk.com/method/execute'
-    #     inner_code = ',\n'.join(
-    #         ['"%d": API.friends.get({"user_id": %d, "count": %d})' % (i, i, count) for i in user_friend_list])
-    #     req_code = 'return {%s};' % inner_code
-    #     req_data = {
-    #         'code': req_code,
-    #         'access_token': access_token
-    #     }
-    #     response = requests.get('?'.join((req_url, urlencode(req_data))))
-    #     return response.json()['response']
-    #
-    #
     # def spt_lst_by_25_elem(user_friend_list):
     #     return list(user_friend_list[(i * 25):(i * 25 + 25)] for i in range(len(user_friend_list) // 25 + 1))
     #
