@@ -1,6 +1,6 @@
 from pprint import pprint
 import sys
-import json
+import time
 from urllib.parse import urlencode
 import requests
 
@@ -75,9 +75,8 @@ def term_print_dot(all_groups, i, unique_groups_list):
     hashes = '.' * int(i % 4) + '.'
     spaces = ' ' * (4 - len(hashes))
     pr_br = hashes + spaces
-    sys.stdout.write("\rОсталось {} уникальных групп из {}. {}".format(unique_groups_list, all_groups, pr_br))
-    sys.stdout.flush()
-
+    sys.stdout.write("\rОсталось {} уникальных групп из {}. /{}/".format(unique_groups_list, all_groups, pr_br))
+    # sys.stdout.flush()
 
 def main():
     user_id = input('Введите id пользователя, за которым будем следить: ')
@@ -92,7 +91,9 @@ def main():
         group_list = group_list.difference(friends_groups_list)
         unique_groups_list = len(group_list)
         term_print_dot(all_groups, i, unique_groups_list)
-
+        time.sleep(0.3)
+    pprint(' ')
+    pprint('Список уникальных групп:')
     pprint(group_list)
 
 
