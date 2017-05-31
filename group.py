@@ -70,12 +70,14 @@ def creat_list_of_friends_list(friends_list):
     list_of_friends_lists = list(friends_list[(i * 25):(i * 25 + 25)] for i in range(len(friends_list) // 25 + 1))
     return list_of_friends_lists
 
+
 def term_print_dot(all_groups, i, unique_groups_list):
     hashes = '.' * int(i % 4) + '.'
     spaces = ' ' * (4 - len(hashes))
     pr_br = hashes + spaces
     sys.stdout.write("\rОсталось {} уникальных групп из {}. {}".format(unique_groups_list, all_groups, pr_br))
     sys.stdout.flush()
+
 
 def main():
     user_id = input('Введите id пользователя, за которым будем следить: ')
@@ -90,7 +92,6 @@ def main():
         group_list = group_list.difference(friends_groups_list)
         unique_groups_list = len(group_list)
         term_print_dot(all_groups, i, unique_groups_list)
-
 
     pprint(group_list)
 
