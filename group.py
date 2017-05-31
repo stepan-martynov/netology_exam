@@ -1,13 +1,16 @@
 from pprint import pprint
-import time
 import json
 from urllib.parse import urlencode
 import requests
 
+print('Данные используемые при разработке\n'
+      'access_token = 34bb0e68405a6a0a07079cb693d2e3dfb830107ff415677fe8e59b8561d1130018f9a375e2a1db93d20f5\n'
+      'user_id = 4058867')
 AOUTH_URL = 'https://oauth.vk.com/authorize'
 APP_ID = 6052865
 V = '5.64'
-access_token = '34bb0e68405a6a0a07079cb693d2e3dfb830107ff415677fe8e59b8561d1130018f9a375e2a1db93d20f5'
+
+access_token = input('Введите access token: ')
 params = dict()
 
 auth_data = {
@@ -21,8 +24,7 @@ auth_data = {
 
 # print('?'.join((AOUTH_URL, urlencode(auth_data))))
 
-def get_friend_list(user_id='4058867'):
-    user_id = input('Введите id пользователя, за которым будем следить: ')
+def get_friend_list(user_id):
 
     params = {
         'user_id': user_id,
@@ -33,8 +35,8 @@ def get_friend_list(user_id='4058867'):
     return user_friend_list
 
 
-def get_user_group_list(user_id='4058867'):
-    user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
+def get_user_group_list(user_id):
+    # user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
 
     params = {
         'user_id': user_id,
@@ -45,12 +47,9 @@ def get_user_group_list(user_id='4058867'):
     user_group_list = response.json()['response']
     return set(user_group_list)
 
-friends_list = get_friend_list()
-
 
 def get_list_friends_groups(friends_list):
     req_link = 'https://api.vk.com/method/execute'
-    friends_groups = set()
 
     req_code = ',\n'.join(['"%d": API.groups.get({"user_id": %d})' % (i, i) for i in friends_list])
     req_code = 'return {%s};' % req_code
@@ -70,35 +69,25 @@ def get_list_friends_groups(friends_list):
 
     return friends_groups_list
 
-friends_groups_list = get_list_friends_groups(friends_list[0:24])
-# pprint(friends_groups_list)
-pprint(len(friends_groups_list))
+def creat_list_of_friends_list(friends_list):
+    list_of_friends_lists = list(friends_list[(i * 25):(i * 25 + 25)] for i in range(len(friends_list) // 25 + 1))
+    return list_of_friends_lists
 
-group_list = get_user_group_list()
-pprint(len(group_list))
-unique_group_list = group_list.difference(friends_groups_list)
-pprint(len(unique_group_list))
+def main():
 
-# def spt_lst_by_25_elem(user_friend_list):
-#     return list(user_friend_list[(i * 25):(i * 25 + 25)] for i in range(len(user_friend_list) // 25 + 1))
-#
-#
-# def main():
-#     user_id, user_friend_list = get_friend_list()
-#     with open('full_list.txt', 'w') as f:
-#         f.write('%s\n' % user_id)
-#     lst_of_users_lists = spt_lst_by_25_elem(user_friend_list)
-#
-#     full_list_of_lists = dict()
-#     count = int(input('Введите ограничение для списка друзей друзей: '))
-#     for users_short_list in lst_of_users_lists:
-#         short_dict = get_friends_list_execute(users_short_list, count)
-#         full_list_of_lists.update(short_dict)
-#
-#     with open('full_list.txt', 'a') as f:
-#         json.dump(full_list_of_lists, f, indent=4)
-#     print(len(full_list_of_lists))
-#
-#
-# if __name__ == '__main__':
-# main()
+    user_id = input('Введите id пользователя, за которым будем следить: ')
+    friends_list = get_friend_list(user_id)
+    list_of_friends_lists = creat_list_of_friends_list(friends_list)
+
+    group_list = get_user_group_list(user_id)
+    pprint(len(group_list))
+
+    for short_friends_list in list_of_friends_lists:
+        friends_groups_list = get_list_friends_groups(short_friends_list)
+        group_list = group_list.difference(friends_groups_list)
+        pprint(len(group_list))
+
+    pprint(group_list)
+
+if __name__ == '__main__':
+    main()
