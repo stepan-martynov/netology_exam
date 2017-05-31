@@ -1,4 +1,5 @@
 from pprint import pprint
+import sys
 import json
 from urllib.parse import urlencode
 import requests
@@ -7,7 +8,6 @@ AOUTH_URL = 'https://oauth.vk.com/authorize'
 APP_ID = 6052865
 V = '5.64'
 
-access_token = input('Введите access token: ')
 params = dict()
 
 auth_data = {
@@ -21,8 +21,7 @@ auth_data = {
 
 # print('?'.join((AOUTH_URL, urlencode(auth_data))))
 
-def get_friend_list(user_id):
-
+def get_friend_list(user_id, access_token):
     params = {
         'user_id': user_id,
         'access_token': access_token
@@ -32,7 +31,7 @@ def get_friend_list(user_id):
     return user_friend_list
 
 
-def get_user_group_list(user_id):
+def get_user_group_list(user_id, access_token):
     # user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
 
     params = {
@@ -45,7 +44,7 @@ def get_user_group_list(user_id):
     return set(user_group_list)
 
 
-def get_list_friends_groups(friends_list):
+def get_list_friends_groups(friends_list, access_token):
     req_link = 'https://api.vk.com/method/execute'
 
     req_code = ',\n'.join(['"%d": API.groups.get({"user_id": %d})' % (i, i) for i in friends_list])
@@ -66,25 +65,35 @@ def get_list_friends_groups(friends_list):
 
     return friends_groups_list
 
+
 def creat_list_of_friends_list(friends_list):
     list_of_friends_lists = list(friends_list[(i * 25):(i * 25 + 25)] for i in range(len(friends_list) // 25 + 1))
     return list_of_friends_lists
 
+def term_print_dot(all_groups, i, unique_groups_list):
+    hashes = '.' * int(i % 4) + '.'
+    spaces = ' ' * (4 - len(hashes))
+    pr_br = hashes + spaces
+    sys.stdout.write("\rОсталось {} уникальных групп из {}. {}".format(unique_groups_list, all_groups, pr_br))
+    sys.stdout.flush()
+
 def main():
-
     user_id = input('Введите id пользователя, за которым будем следить: ')
-    friends_list = get_friend_list(user_id)
+    access_token = input('Введите access token: ')
+    friends_list = get_friend_list(user_id, access_token)
     list_of_friends_lists = creat_list_of_friends_list(friends_list)
+    group_list = get_user_group_list(user_id, access_token)
+    all_groups = len(group_list)
 
-    group_list = get_user_group_list(user_id)
-    pprint(len(group_list))
-
-    for short_friends_list in list_of_friends_lists:
-        friends_groups_list = get_list_friends_groups(short_friends_list)
+    for i, short_friends_list in enumerate(list_of_friends_lists):
+        friends_groups_list = get_list_friends_groups(short_friends_list, access_token)
         group_list = group_list.difference(friends_groups_list)
-        pprint(len(group_list))
+        unique_groups_list = len(group_list)
+        term_print_dot(all_groups, i, unique_groups_list)
+
 
     pprint(group_list)
+
 
 if __name__ == '__main__':
     main()
