@@ -3,9 +3,6 @@ import json
 from urllib.parse import urlencode
 import requests
 
-print('Данные используемые при разработке\n'
-      'access_token = 34bb0e68405a6a0a07079cb693d2e3dfb830107ff415677fe8e59b8561d1130018f9a375e2a1db93d20f5\n'
-      'user_id = 4058867')
 AOUTH_URL = 'https://oauth.vk.com/authorize'
 APP_ID = 6052865
 V = '5.64'
