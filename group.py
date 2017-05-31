@@ -92,7 +92,7 @@ def term_print_dot(all_groups, i, unique_groups_list):
 def get_groups_info(group_ids, access_token):
     params = {
         'group_ids': group_ids,
-        # 'fields': 'members_count',
+        'fields': 'members_count',
         'access_token': access_token
     }
     response = requests.get('https://api.vk.com/method/groups.getById', params)
