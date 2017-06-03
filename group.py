@@ -2,57 +2,37 @@ from pprint import pprint
 import sys
 import time
 from urllib.parse import urlencode
+
 import requests
 import json
 
-AOUTH_URL = 'https://oauth.vk.com/authorize'
-APP_ID = 6052865
-V = '5.64'
 
-params = dict()
-
-auth_data = {
-    'client_id': APP_ID,
-    'display': 'mobile',
-    'response_type': 'token',
-    'scope': 'friends,groups',
-    'v': V
-}
-
-
+# AOUTH_URL = 'https://oauth.vk.com/authorize'
+# APP_ID = 6052865
+# V = '5.64'
+#
+# params = dict()
+#
+# auth_data = {
+#     'client_id': APP_ID,
+#     'display': 'mobile',
+#     'response_type': 'token',
+#     'scope': 'friends,groups',
+#     'v': V
+# }
+#
 # print('?'.join((AOUTH_URL, urlencode(auth_data))))
 
-def get_user_id(user_id, access_token):
-    params = {
-        'user_ids': user_id,
-        'access_token': access_token
-    }
-    response = requests.get('https://api.vk.com/method/users.get', params)
-    user_id = response.json()['response'][0]['uid']
-    return user_id
-
-
-def get_friend_list(user_id, access_token):
-    params = {
-        'user_id': user_id,
-        'access_token': access_token
-    }
-    response = requests.get('https://api.vk.com/method/friends.get', params)
-    user_friend_list = response.json()['response']
-    return user_friend_list
-
-
-def get_user_group_list(user_id, access_token):
-    # user_id = input('Введите id пользователя, список групп которого хотите посмотреть: ')
-
-    params = {
-        'user_id': user_id,
-        'access_token': access_token
-    }
-
-    response = requests.get('https://api.vk.com/method/groups.get', params)
-    user_group_list = response.json()['response']
-    return set(user_group_list)
+def simple_request_to_api(req_url, params):
+    resp = requests.get(req_url, params).json()
+    if 'error' in resp.keys():
+        with open('api_error.log', 'a') as f:
+            f.write(
+                '{}: {} // {}\n'.format(time.ctime(time.time()), resp['error']['error_msg'], ' '.join(params.values())))
+        time.sleep(0.4)
+        simple_request_to_api(req_url, params, **code_str)
+    resp = resp['response']
+    return resp
 
 
 def get_list_friends_groups(friends_list, access_token):
@@ -65,7 +45,7 @@ def get_list_friends_groups(friends_list, access_token):
         'access_token': access_token
     }
 
-    response = requests.get('?'.join((req_link, urlencode(req_data))))
+    response = requests.get(req_link, req_data)
 
     friends_groups_dict = response.json()['response']
     friends_groups_list = set()
@@ -83,49 +63,70 @@ def creat_list_of_friends_list(friends_list):
 
 
 def term_print_dot(all_groups, i, unique_groups_list):
-    hashes = '.' * int(i % 4) + '.'
-    spaces = ' ' * (4 - len(hashes))
-    pr_br = hashes + spaces
-    sys.stdout.write("\rОсталось {} уникальных групп из {}. /{}/".format(unique_groups_list, all_groups, pr_br))
-
-
-def get_groups_info(group_ids, access_token):
-    params = {
-        'group_ids': group_ids,
-        'fields': 'members_count',
-        'access_token': access_token
-    }
-    response = requests.get('https://api.vk.com/method/groups.getById', params)
-    groups_info = response.json()['response']
-    return groups_info
+    dots = '.' * int(i % 4) + '.'
+    spaces = ' ' * (4 - len(dots))
+    sys.stdout.write("\rОсталось {} уникальных групп из {}. /{}/".format(unique_groups_list, all_groups, dots + spaces))
 
 
 def main():
-    user_id = input('Введите id пользователя, за которым будем следить: ')
+    with open('api_error.log', 'w') as f:
+        f.write('Started at {}\n'.format(time.ctime(time.time())))
     access_token = input('Введите access token: ')
-
+    user_id = input('Введите id пользователя, за которым будем следить: ')
+    pprint(time.ctime(time.time()))
     try:
         user_id = int(user_id)
     except ValueError:
-        user_id = get_user_id(user_id, access_token)
-    friends_list = get_friend_list(user_id, access_token)
+        req_url = 'https://api.vk.com/method/users.get'
+        params = {
+            'user_ids': user_id,
+            'access_token': access_token
+        }
+        user_id = simple_request_to_api(req_url, params)[0]['uid']
+
+    params = {
+        'user_id': user_id,
+        'access_token': access_token
+    }
+    req_url = 'https://api.vk.com/method/friends.get'
+    friends_list = simple_request_to_api(req_url, params)
+
     list_of_friends_lists = creat_list_of_friends_list(friends_list)
-    group_list = get_user_group_list(user_id, access_token)
-    all_groups = len(group_list)
+
+    params = {
+        'user_id': user_id,
+        'access_token': access_token
+    }
+    req_url = 'https://api.vk.com/method/groups.get'
+
+    groups_ids = set(simple_request_to_api(req_url, params))
+    all_groups = len(groups_ids)
 
     for i, short_friends_list in enumerate(list_of_friends_lists):
         friends_groups_list = get_list_friends_groups(short_friends_list, access_token)
-        group_list = group_list.difference(friends_groups_list)
-        groups_list_len = len(group_list)
+        groups_ids = groups_ids.difference(friends_groups_list)
+        groups_list_len = len(groups_ids)
         term_print_dot(all_groups, i, groups_list_len)
         time.sleep(0.3)
     print()
     print('Формируем расширенный список уникальных групп')
-    groups_info = get_groups_info(str(group_list), access_token)
+
+    req_url = 'https://api.vk.com/method/groups.getById'
+
+    params = {
+        'group_ids': ','.join(map(str, groups_ids)),
+        'fields': 'members_count',
+        'access_token': access_token
+    }
+    groups_info = simple_request_to_api(req_url, params)
+
     print('Записываем в файл')
     with open('groups_info.json', 'w', encoding='utf-8') as f:
-        json.dump(groups_info, f, indent=2, ensure_ascii = False)
+        f.write('Writed at {}. {} unque groups\n'.format(time.ctime(time.time()), len(groups_info)))
+        json.dump(groups_info, f, indent=2, ensure_ascii=False)
     print('Файлы находятся в файле groups_info.json')
+    pprint(time.ctime(time.time()))
+
 
 if __name__ == '__main__':
     main()
