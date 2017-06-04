@@ -1,7 +1,7 @@
+from urllib.parse import urlencode
 from pprint import pprint
 import sys
 import time
-from urllib.parse import urlencode
 import requests
 import json
 
@@ -24,6 +24,7 @@ import json
 
 def call_api(method, params):
     url_base = 'https://api.vk.com/method/'
+    params['V'] = 5.65
 
     resp = requests.get(''.join([url_base, method]), params).json()
     if 'error' in resp.keys():
@@ -31,7 +32,8 @@ def call_api(method, params):
             f.write(
                 '{}: {} // {}\n'.format(time.ctime(time.time()), resp['error']['error_msg'], ' '.join(params.values())))
         time.sleep(0.4)
-        # call_api(req_url, params, **code_str)
+        # call_api(req_url, params)
+    # pprint(resp)
     resp = resp['response']
     return resp
 
