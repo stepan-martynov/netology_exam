@@ -28,14 +28,27 @@ class CallApi:
         self.params = params
         self.params['V'] = 5.65
         self.url_base = 'https://api.vk.com/method/'
+        self.error_counter = 0
 
     def __str__(self):
         print(self.method)
 
     def response(self):
-        response = requests.get(''.join([self.url_base, self.method]), self.params).json()
-        if 'error' in response.keys():
-            print('\n{}: {} // {}'.format(time.ctime(time.time()), response['error']['error_msg'], self.method))
+        try:
+            response = requests.get(''.join([self.url_base, self.method]), self.params).json()
+            if 'error' in response:
+                if response['error']['error_code'] == 6:
+                    self.error_counter += 1
+                    time.sleep(0.3)
+                    response(self)
+                elif response['error']['error_code'] == 5:
+                    raise Exception(response)
+                else:
+                    self.error_counter += 1
+                if self.error_counter >= 3:
+                    raise Exception(response)
+        except Exception as vk_api_error:
+            print('\nOooops, error: {}'.format(response['error']['error_msg']))
         return response['response']
 
 
